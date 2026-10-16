@@ -3,39 +3,74 @@
 #include <ctime>
 #include <vector>
 
+const int WORLD_W = 1000;
+const int WORLD_H = 1000;
+const int BALL_COUNT = 10;
+const float BALL_RADIUS = 50.0f;
+const float MIN_SPEED = 1.0f;
+const float MAX_SPEED = 3.0f;
+
 class Bila{
     
-    int xcoord;
-    int ycoord;
-    int xspeed;
-    int yspeed;
-    int width;
+    float xcoord;
+    float ycoord;
+    float xspeed;
+    float yspeed;
+    float width;
+
     public:
     Bila(){
-        xcoord = rand()%801+400;
-        ycoord = rand()%801+400;
-        xspeed = rand()%6-3;
-        yspeed = rand()%6-3;
-        width = 20;
+        width = BALL_RADIUS;
+        xcoord = width + (float)rand() / RAND_MAX * (WORLD_W - 2 * width);
+        ycoord = width + (float)rand() / RAND_MAX * (WORLD_H - 2 * width);
+        float angle = ((float)rand() / RAND_MAX) * 6.2831853f;
+        float speed = MIN_SPEED + ((float)rand() / RAND_MAX) * (MAX_SPEED - MIN_SPEED);
+        xspeed = std::cos(angle) * speed;
+        yspeed = std::sin(angle) * speed;
+        
     }
     void moveBalls(){
         xcoord+=xspeed;
         ycoord+=yspeed;
-        if(ycoord > 1600 || ycoord < 0){
-            yspeed*=-1;
+        if (xcoord < width) { 
+            xcoord = width;
+            xspeed = std::fabs(xspeed); 
         }
-        if(xcoord > 1600 || xcoord < 0){
-            xspeed*=-1;
+        if (xcoord > WORLD_W - width) { 
+            xcoord = WORLD_W - width;  
+            xspeed = -std::fabs(xspeed); 
+        }
+        if (ycoord < width) { 
+            ycoord = width;
+            yspeed =  std::fabs(yspeed); 
+        }
+        if (ycoord > WORLD_H - width) { 
+            ycoord = WORLD_H - width;  
+            yspeed = -std::fabs(yspeed); 
         }
     }
-    int getx(){
+    float getx(){
         return xcoord;
     }
-    int gety(){
+    float gety(){
         return ycoord;
     }
-    int getwidth(){
+    float getwidth(){
         return width;
+    }
+    float getxspeed() {
+        return xspeed;
+    }
+    float getyspeed() {
+        return yspeed;
+    }
+    void setPos(float x, float y) {
+        xcoord = x;
+        ycoord = y;
+    }
+    void setSpeed(float xsp, float ysp) {
+        xspeed = xsp;
+        yspeed = ysp;
     }
 };
 
