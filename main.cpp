@@ -16,10 +16,10 @@ int main(void)
         if (IsKeyDown(KEY_RIGHT)) 
         {
             ballX += 3;
-        } else if (IsKeyDown(KEY_UP)) 
+        } else if (IsKeyDown(KEY_LEFT)) 
         {
             ballX -= 3;
-        } else if (IsKeyDown(KEY_LEFT)) 
+        } else if (IsKeyDown(KEY_UP)) 
         {
             ballY -= 3;
         } else if (IsKeyDown(KEY_DOWN)) 
