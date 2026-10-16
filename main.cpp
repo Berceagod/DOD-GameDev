@@ -10,10 +10,12 @@ int main(void)
     float ballRadius = 20.0f;
     float ballColor[3] = {1.0f, 1.0f, 1.0f};
     bool showDemo = false;
+    int screenWidth = 1000;
+    int screenHeigth = 800;
 
     Color green = {0, 0, 0, 0};
 
-    InitWindow(800, 800, "Example");
+    InitWindow(screenWidth, screenHeigth, "Example");
     SetTargetFPS(60);
     rlImGuiSetup(true);
 
