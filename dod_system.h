@@ -2,7 +2,6 @@
 #include <vector>
 #include <cstdlib>
 #include "raylib.h"
-//#include "main.h"
 
 /// @brief metoda DOD de rezolvare
 // FUNCTII: Spawn(), Update(), ResolveCollisions(), Draw()
