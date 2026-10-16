@@ -1,19 +1,27 @@
 {
+    "version": "2.0.0",
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: gcc.exe build active file",
-            "command": "gcc.exe",
+            "label": "C++: build raylib + imgui",
+            "command": "g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "main.cpp",
+                "rlImGui/rlImGui.cpp",
+                "imgui/imgui.cpp",
+                "imgui/imgui_draw.cpp",
+                "imgui/imgui_tables.cpp",
+                "imgui/imgui_widgets.cpp",
+                "imgui/imgui_demo.cpp",
+                "-o", "main.exe",
                 "-O1",
                 "-Wall",
-                "-std=c99",
+                "-std=c++17",
                 "-Wno-missing-braces",
+                "-I", "imgui",
+                "-I", "rlImGui",
                 "-I", "C:/raylib/raylib/src",
                 "-L", "C:/raylib/raylib/src",
                 "-lraylib",
@@ -22,7 +30,7 @@
                 "-lwinmm"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"
@@ -31,8 +39,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "Compiler setup for Raylib"
+            "detail": "Compiles main.cpp + ImGui + rlImGui and links raylib"
         }
-    ],
-    "version": "2.0.0"
+    ]
 }
