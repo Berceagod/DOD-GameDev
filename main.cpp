@@ -1,22 +1,23 @@
 #include <raylib.h>
 #include "imgui.h"
 #include "rlImGui.h"
+#include "config.h"
 
 int main(void)
 {
-    int ballX = 400;
-    int ballY = 400;
-    int speed = 3;
-    float ballRadius = 20.0f;
-    float ballColor[3] = {1.0f, 1.0f, 1.0f};
-    bool showDemo = false;
-    int screenWidth = 1000;
-    int screenHeigth = 800;
 
-    Color green = {0, 0, 0, 0};
+    int   ballX      = Config::BALL_START_X;
+    int   ballY      = Config::BALL_START_Y;
+    int   speed      = Config::BALL_SPEED;
+    float ballRadius = Config::BALL_RADIUS;
+    float ballColor[3] = {Config::BALL_COLOR[0], Config::BALL_COLOR[1], Config::BALL_COLOR[2]};
+    SpawnMode mode   = Config::DEFAULT_SPAWN_MODE;
+    bool showDemo    = false;
 
-    InitWindow(screenWidth, screenHeigth, "Example");
-    SetTargetFPS(60);
+
+
+    InitWindow(Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT, Config::WINDOW_TITLE);
+    SetTargetFPS(Config::TARGET_FPS);
     rlImGuiSetup(true);
 
     while (!WindowShouldClose())
@@ -28,7 +29,7 @@ int main(void)
         if (IsKeyDown(KEY_DOWN))  ballY += speed;
 
         BeginDrawing();
-        ClearBackground(green);
+        ClearBackground(Config::BACKGROUND);
 
         Color c = {
             (unsigned char)(ballColor[0] * 255),
@@ -47,8 +48,8 @@ int main(void)
         ImGui::ColorEdit3("Color", ballColor);
         if (ImGui::Button("Reset position"))
         {
-            ballX = 400;
-            ballY = 400;
+            ballX = Config::BALL_START_X;
+            ballY = Config::BALL_START_Y;
         }
         ImGui::Checkbox("Show demo window", &showDemo);
         ImGui::Text("Position: %d, %d", ballX, ballY);
@@ -56,7 +57,7 @@ int main(void)
 
         if (showDemo) ImGui::ShowDemoWindow(&showDemo);
 
-        rlImGuiEnd();
+        rlImGuiEnd(); 
 
         EndDrawing();
     }
