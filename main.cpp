@@ -11,7 +11,7 @@ int main(void)
     float ballColor[3] = {1.0f, 1.0f, 1.0f};
     bool showDemo = false;
 
-    Color green = {20, 160, 133, 255};
+    Color green = {0, 0, 0, 0};
 
     InitWindow(800, 800, "Example");
     SetTargetFPS(60);
