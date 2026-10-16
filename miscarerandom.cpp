@@ -12,8 +12,8 @@ class Bila{
     int width;
     public:
     Bila(){
-        xcoord = rand()%601;
-        ycoord = rand()%601;
+        xcoord = rand()%801+400;
+        ycoord = rand()%801+400;
         xspeed = rand()%6-3;
         yspeed = rand()%6-3;
         width = 20;
@@ -21,6 +21,12 @@ class Bila{
     void moveBalls(){
         xcoord+=xspeed;
         ycoord+=yspeed;
+        if(ycoord > 1600 || ycoord < 0){
+            yspeed*=-1;
+        }
+        if(xcoord > 1600 || xcoord < 0){
+            xspeed*=-1;
+        }
     }
     int getx(){
         return xcoord;
@@ -38,8 +44,9 @@ int main(void)
     srand(time(0));
     Color green = {20, 160, 133, 255};
 
-    InitWindow(800, 800, "Example");
+    InitWindow(1600, 1600, "Example");
     SetTargetFPS(60);
+<<<<<<< Updated upstream
     Bila bila1;
     Bila bila2;
     Bila bila3;
@@ -50,11 +57,19 @@ int main(void)
     Bila bila8;
     Bila bila9;
     Bila bila10;
+=======
+    std::vector<Bila> bileVector;
+    for (int i = 0; i < 10000; i++){
+
+        bileVector.push_back(Bila());
+    }
+>>>>>>> Stashed changes
     // Game Loop
     while (WindowShouldClose() == false) 
     {
         BeginDrawing();
         ClearBackground(green);
+<<<<<<< Updated upstream
         bila1.moveBalls();
         bila2.moveBalls();
         bila3.moveBalls();
@@ -75,6 +90,12 @@ int main(void)
         DrawCircle(bila8.getx(), bila8.gety(), bila8.getwidth(), WHITE);
         DrawCircle(bila9.getx(), bila9.gety(), bila9.getwidth(), WHITE);
         DrawCircle(bila10.getx(), bila10.gety(), bila10.getwidth(), WHITE);
+=======
+        for(auto& bila : bileVector){
+            DrawCircle(bila.getx(), bila.gety(), bila.getwidth(), WHITE);
+            bila.moveBalls();
+        }
+>>>>>>> Stashed changes
         EndDrawing();
     }
 
