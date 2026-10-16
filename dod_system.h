@@ -4,7 +4,7 @@
 #include "raylib.h"
 
 /// @brief metoda DOD de rezolvare
-// FUNCTII: Spawn(), Update(), ResolveCollisions(), Draw()
+// FUNCTII: Spawn(), Despawn(), Update(), ResolveCollisions(), Draw()
 
 struct DODSystem {
     // Structuri de date
@@ -15,16 +15,17 @@ struct DODSystem {
     std::vector<int> radius;
     std::vector<Color> colors;
 
-    // SPAWN FUCNTION 
-    void Spawn(int count, float screenWidth, float screenHeight) {
-        posX.resize(count);
-        posY.resize(count);
-        velX.resize(count);
-        velY.resize(count);
-        radius.resize(count);
-        colors.resize(count);
+    // SPAWN FUCNTION
+    void Spawn(int newCount, float screenWidth, float screenHeight) {
+        int oldSize = posX.size();
+        posX.resize(newCount);
+        posY.resize(newCount);
+        velX.resize(newCount);
+        velY.resize(newCount);
+        radius.resize(newCount);
+        colors.resize(newCount);
 
-        for (int i = 0; i < count; i++) {
+        for (int i = oldSize; i < newCount; i++) {
             posX[i] = (float)(rand() % (int)screenWidth);
             posY[i] = (float)(rand() % (int)screenHeight);
             
@@ -45,9 +46,52 @@ struct DODSystem {
         }
     }
 
+    // REMOVE FUCNTION
+    // metoda de a sterge un element din vectori la un index dat
+    void RemoveParticleAt(int index) {
+        if (posX.empty()) return;
+
+        int lastIndex = (int)posX.size() - 1;
+
+        //verific sa fie index VALID
+        if(index < 0 || index > lastIndex) return;
+
+        //scriu elementul de pe ultima pos peste elementul de sters
+        posX[index] = posX[lastIndex];
+        posY[index] = posY[lastIndex];
+        velX[index] = velX[lastIndex];
+        velY[index] = velY[lastIndex];
+        radius[index] = radius[lastIndex];
+        colors[index] = colors[lastIndex];
+
+        //scot ultimul element din vectori
+        posX.pop_back();
+        posY.pop_back();
+        velX.pop_back();
+        velY.pop_back();
+        radius.pop_back();
+        colors.pop_back();
+        //IMPORTANT!! dupa pop_back() dimensiunea vectorilor scade cu 1
+    }
+
+    // DESPAWN FUCNTION
+    void Despawn(int newCount) {
+        int oldSize = posX.size();
+
+        if (newCount < oldSize) {
+            for (int i = 0; i < oldSize - newCount; i++) {
+                if(posX.empty()) break;
+                // aleg random la ce index dau delete pastrand restul de elemente
+                RemoveParticleAt(rand() % posX.size());
+            }
+        }
+    }
+
+
     // UPDATE FUNCTION
-    void Update(float screenWidth, float screenHeight) {
-        int count = posX.size(); // count devine size de posX
+    void Move(int newCount, float screenWidth, float screenHeight) {
+        int count = posX.size();
+
         for(int i = 0; i < count; i++) {
             posX[i] += velX[i];
             posY[i] += velY[i];
@@ -99,4 +143,4 @@ struct DODSystem {
             DrawCircle((int)posX[i], (int)posY[i], radius[i], colors[i]);
         }
     }
-}
+};
