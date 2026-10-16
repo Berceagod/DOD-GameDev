@@ -15,7 +15,7 @@ namespace Config
     inline constexpr int   SCREEN_HEIGHT = 800;
     inline constexpr char  WINDOW_TITLE[] = "Tema";
     inline constexpr Color BACKGROUND    = {0, 0, 0, 255};
-
+    inline constexpr int   TARGET_FPS    = 60;
     // Ball defaults
     inline constexpr float BALL_RADIUS   = 20.0f;
     inline constexpr int   BALL_SPEED    = 3;
