@@ -2,7 +2,7 @@
 #include <vector>
 #include <cstdlib>
 #include "raylib.h"
-
+#include "config.h"
 /// @brief metoda DOD de rezolvare
 //FUNCTII: SpawnOne(), Spawn(), Despawn(), Move(), ResolveCollisions(), DrawRGB(), DrawOne()
 // Getteri pentru toate proprietatile|Setteri pentru toate proprietatile
@@ -103,7 +103,7 @@ struct DODSystem {
 
 
     // MOVE FUNCTION
-    void Move(int newCount, float screenWidth, float screenHeight) {
+    void Move(int newCount) {
         int count = (int)posX.size();
 
         for(int i = 0; i < count; i++) {
@@ -112,9 +112,9 @@ struct DODSystem {
 
             // COLIZIUNE cu borderul windowului
             if (posX[i] - radius[i] < 0) { posX[i] = radius[i]; velX[i] *= -1; }
-            if (posX[i] + radius[i] > screenWidth) { posX[i] = screenWidth - radius[i]; velX[i] *= -1; }
+            if (posX[i] + radius[i] > Config::SCREEN_WIDTH) { posX[i] = Config::SCREEN_WIDTH - radius[i]; velX[i] *= -1; }
             if (posY[i] - radius[i] < 0) { posY[i] = radius[i]; velY[i] *= -1; }
-            if (posY[i] + radius[i] > screenHeight) { posY[i] = screenHeight - radius[i]; velY[i] *= -1; }
+            if (posY[i] + radius[i] > Config::SCREEN_HEIGHT) { posY[i] = Config::SCREEN_HEIGHT - radius[i]; velY[i] *= -1; }
         }
     }
 
@@ -126,9 +126,9 @@ struct DODSystem {
 
         // COLIZIUNE cu borderul windowului
         if (posX[index] - radius[index] < 0) { posX[index] = radius[index]; velX[index] *= -1; }
-        if (posX[index] + radius[index] > newX) { posX[index] = newX - radius[index]; velX[index] *= -1; }
+        if (posX[index] + radius[index] > Config::SCREEN_WIDTH) { posX[index] = Config::SCREEN_WIDTH - radius[index]; velX[index] *= -1; }
         if (posY[index] - radius[index] < 0) { posY[index] = radius[index]; velY[index] *= -1; }
-        if (posY[index] + radius[index] > newY) { posY[index] = newY - radius[index]; velY[index] *= -1; }
+        if (posY[index] + radius[index] > Config::SCREEN_HEIGHT) { posY[index] = Config::SCREEN_HEIGHT - radius[index]; velY[index] *= -1; }
 
         newX = posX[index];
         newY = posY[index];
