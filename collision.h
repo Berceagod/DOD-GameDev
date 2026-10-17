@@ -37,32 +37,3 @@ void ObjectCollision(int count, int cell_array[count], int index) {
         }
     }
 }
-
-
-int test(void)
-{
-    srand((unsigned)time(0));
- 
-    InitWindow(Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT, Config::WINDOW_TITLE);
-    SetTargetFPS(60);
- 
-    std::vector<Bila> bileVector;
-    bileVector.reserve(BALL_COUNT);
-    for (int i = 0; i < BALL_COUNT; i++) bileVector.push_back(Bila());
- 
-    while (WindowShouldClose() == false)
-    {
-        for (auto& bila : bileVector) bila.moveBalls();
-        ResolveCollision(bileVector);
- 
-        BeginDrawing();
-        ClearBackground(Config::BACKGROUND);
-        for (auto& bila : bileVector)
-            DrawCircleV({bila.getx(), bila.gety()}, bila.getwidth(), WHITE);
-        DrawFPS(10, 10);
-        EndDrawing();
-    }
- 
-    CloseWindow();
-    return 0;
-}
