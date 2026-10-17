@@ -9,6 +9,7 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "main.cpp",
+				"benchmark.cpp",
                 "-o", "main.exe",
                 "-O1",
                 "-Wall",
