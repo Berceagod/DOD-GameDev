@@ -143,4 +143,50 @@ struct DODSystem {
             DrawCircle((int)posX[i], (int)posY[i], radius[i], colors[i]);
         }
     }
+
+    int getPosX(int index) {
+        // verific daca indexul este valid
+        if (index < 0 || index >= posX.size()) return -1; 
+        return posX[index];
+    }
+    
+    int getPosY(int index) {
+        // verific daca indexul este valid
+        if (index < 0 || index >= posY.size()) return -1; 
+        return posY[index];
+    }
+
+    int getVelX(int index) {
+        // verific daca indexul este valid
+        if (index < 0 || index >= velX.size()) return -1; 
+        return velX[index];
+    }
+
+        int getVelY(int index) {
+        // verific daca indexul este valid
+        if (index < 0 || index >= velY.size()) return -1; 
+        return velY[index];
+    }
+
+    int getRadius(int index) {
+        // verific daca indexul este valid
+        if (index < 0 || index >= radius.size()) return -1; 
+        return radius[index];
+    }
+
+    int getColorR(int index) {
+        // verific daca indexul este valid
+        if (index < 0 || index >= colors.size()) return -1; 
+        return colors[index].r;
+    }
+    int getColorG(int index) {
+        // verific daca indexul este valid
+        if (index < 0 || index >= colors.size()) return -1; 
+        return colors[index].g;
+    }
+    int getColorB(int index) {
+        // verific daca indexul este valid
+        if (index < 0 || index >= colors.size()) return -1; 
+        return colors[index].b;
+    }
 };
