@@ -4,7 +4,8 @@
 #include "raylib.h"
 
 /// @brief metoda DOD de rezolvare
-// FUNCTII: Spawn(), Despawn(), Update(), ResolveCollisions(), Draw()
+//FUNCTII: SpawnOne(), Spawn(), Despawn(), Move(), ResolveCollisions(), DrawRGB(), DrawOne()
+// Getteri pentru toate proprietatile|Setteri pentru toate proprietatile
 
 struct DODSystem {
     // Structuri de date
@@ -15,9 +16,23 @@ struct DODSystem {
     std::vector<int> radius;
     std::vector<Color> colors;
 
+    // SPAWN ONE FUNCTION
+    void SpawnOne(int posX, int posY, int velX, int velY, int radius, Color color) {
+        this->posX.push_back(posX);
+        this->posY.push_back(posY);
+        this->velX.push_back(velX);
+        this->velY.push_back(velY);
+        this->radius.push_back(radius);
+        this->colors.push_back(color);
+    }
+
     // SPAWN FUCNTION
-    void Spawn(int newCount, float screenWidth, float screenHeight) {
-        int oldSize = posX.size();
+    void Spawn(int newCount, float screenWidth, float screenHeight, int randDim, int randVel) {
+        int oldSize;
+        if (posX.empty()) oldSize = 0;
+        else { 
+            oldSize = (int)posX.size();
+        }
         posX.resize(newCount);
         posY.resize(newCount);
         velX.resize(newCount);
@@ -30,12 +45,11 @@ struct DODSystem {
             posY[i] = (float)(rand() % (int)screenHeight);
             
             // Viteze aleatorii mici
-            velX[i] = ((float)(rand() % 200) - 100) / 30.0f;
-            velY[i] = ((float)(rand() % 200) - 100) / 30.0f;
-            // % 200 ca sa ia valori intre 0 si 199;
-            // - 100 ca sa ia valori intre -100 si 99;
-            // / 30.0f ca sa le facem mai mici, intre -3.33 si 3.3
-            
+            velX[i] = ((float)(rand() % randVel) - randVel/2) / 30.0f;
+            velY[i] = ((float)(rand() % randVel) - randVel/2) / 30.0f;
+            // % randVel ca sa ia valori intre 0 si randVel-1;
+            // - randVel/2 ca sa ia valori intre -randVel/2 si randVel/2-1;
+            // / 30.0f ca sa le facem mai mici, intre -randVel/30 si randVel/30-1/30;
             radius[i] = 5.0f; // Raza cercului
             
             //RGB aleatorii pentru culoare
@@ -76,7 +90,7 @@ struct DODSystem {
 
     // DESPAWN FUCNTION
     void Despawn(int newCount) {
-        int oldSize = posX.size();
+        int oldSize = (int)posX.size();
 
         if (newCount < oldSize) {
             for (int i = 0; i < oldSize - newCount; i++) {
@@ -88,9 +102,9 @@ struct DODSystem {
     }
 
 
-    // UPDATE FUNCTION
+    // MOVE FUNCTION
     void Move(int newCount, float screenWidth, float screenHeight) {
-        int count = posX.size();
+        int count = (int)posX.size();
 
         for(int i = 0; i < count; i++) {
             posX[i] += velX[i];
@@ -104,10 +118,25 @@ struct DODSystem {
         }
     }
 
+    // MOVEDOD FUNCTION
+    void MoveDOD(int index, int &newX, int &newY){
+        if (index < 0 || index >= posX.size()) return; // verific daca indexul este valid
+        posX[index] += velX[index];
+        posY[index] += velY[index];
+
+        // COLIZIUNE cu borderul windowului
+        if (posX[index] - radius[index] < 0) { posX[index] = radius[index]; velX[index] *= -1; }
+        if (posX[index] + radius[index] > newX) { posX[index] = newX - radius[index]; velX[index] *= -1; }
+        if (posY[index] - radius[index] < 0) { posY[index] = radius[index]; velY[index] *= -1; }
+        if (posY[index] + radius[index] > newY) { posY[index] = newY - radius[index]; velY[index] *= -1; }
+
+        newX = posX[index];
+        newY = posY[index];
+    }
     //COLIZIUNE FUCNTION 
     // pentru valoare 100.000 o sa mearg prost pentru o verificare N^2
     void ResolveCollisions(){
-        int count = posX.size();
+        int count = (int)posX.size();
         for (int i = 0; i < count - 1; i++) {
             for(int j = i + 1; j < count; j++)
             {
@@ -120,7 +149,7 @@ struct DODSystem {
     
                 //verific patratul distantelor ca e mai cost efficient decat sa fac sqrt
                 //fac verificarea > 0.0001f ca sa nu am eroare la impartirea la 0
-                if(distanceSq < radiusSumSq && distanceSq > 0.0001f){
+                if(distanceSq < radiusSumSq && distanceSq > 0.0001f) {
                     //coliziune cu efect elastic
                     float tempVx = velX[i];
                     float tempVy = velY[i];
@@ -135,14 +164,21 @@ struct DODSystem {
         }
     }
 
-    // DRAW FUNCTION
-    void Draw() {
+    // DRAWRGB FUNCTION
+    void DrawRGB() {
         int count = posX.size();
         for (int i = 0; i < count; i++) {
             // Fac casting la int pentru ca raylib foloseste int pentru pozitiile de desenat(nuamr intreg de pixeli)
             DrawCircle((int)posX[i], (int)posY[i], radius[i], colors[i]);
         }
     }
+
+    // DRAWONE FUNCTION
+    void DrawOne(int index) {
+        if (index < 0 || index >= posX.size()) return; // verific daca indexul este valid
+        DrawCircle((int)posX[index], (int)posY[index], radius[index], colors[index]);
+    }
+
 
     int getPosX(int index) {
         // verific daca indexul este valid
@@ -188,5 +224,33 @@ struct DODSystem {
         // verific daca indexul este valid
         if (index < 0 || index >= colors.size()) return -1; 
         return colors[index].b;
+    }
+    int getCount(){
+        if(posX.empty()) return 0;
+        else return (int)posX.size();
+    }
+    void setPosX(int index, int value) {
+        if (index < 0 || index >= posX.size()) return; 
+        posX[index] = value;
+    }
+    void setPosY(int index, int value) {
+        if (index < 0 || index >= posY.size()) return; 
+        posY[index] = value;
+    }
+    void setVelX(int index, int value) {
+        if (index < 0 || index >= velX.size()) return; 
+        velX[index] = value;
+    }
+    void setVelY(int index, int value) {
+        if (index < 0 || index >= velY.size()) return; 
+        velY[index] = value;
+    }
+    void setRadius(int index, int value) {
+        if (index < 0 || index >= radius.size()) return; 
+        radius[index] = value;
+    }
+    void setColor(int index, Color value) {
+        if (index < 0 || index >= colors.size()) return; 
+        colors[index] = value;
     }
 };
