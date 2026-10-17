@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "rlImGui.h"
 #include "config.h"
+#include "benchmark.h"
 
 int main(void)
 {
@@ -22,6 +23,7 @@ int main(void)
 
     while (!WindowShouldClose())
     {
+        Benchmark::Begin();
 
         if (IsKeyDown(KEY_RIGHT)) ballX += speed;
         if (IsKeyDown(KEY_LEFT))  ballX -= speed;
@@ -38,10 +40,12 @@ int main(void)
             255
         };
         DrawCircle(ballX, ballY, ballRadius, c);
+        Benchmark::End();
 
         // ---- GUI ----
         rlImGuiBegin();
-
+        Benchmark::DrawUI();
+        
         ImGui::Begin("Ball Controls");
         ImGui::SliderInt("Speed", &speed, 1, 10);
         ImGui::SliderFloat("Radius", &ballRadius, 5.0f, 100.0f);
