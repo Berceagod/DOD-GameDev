@@ -7,11 +7,12 @@
 #include "config.h"
 #include "benchmark.h"
 #include "dod_system.h"
+#include "collision.h"
 
 void check_mouse(bool useDOD, DODSystem& dodSystem);
+//TODO sa fie gen un singur vector, si sa apelezi cu index, in loc sa fie vector de vectori.
 void clear_grid(std::vector<std::vector<int>>& grid);
 void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows);
-void resolve_cell_collisions(bool useDOD, const std::vector<int>& cellIndexes, DODSystem& dodSystem);
 void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem);
 void draw_balls(bool useDOD, DODSystem& dodSystem);
 
@@ -155,43 +156,11 @@ void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, /* OOPSystem& o
         }
     }
 }
-//verificare coliziuni luand ca input vectorul 1D al unei celule din grid
-void resolve_cell_collisions(bool useDOD, const std::vector<int>& cellIndexes, DODSystem& dodSystem /*, OOPSystem& oopSystem*/) {
-    int pInCell = cellIndexes.size();
-    if (pInCell < 2) return; 
 
-    for (int i = 0; i < pInCell - 1; i++) {
-        for (int j = i + 1; j < pInCell; j++) {
-            int id1 = cellIndexes[i];
-            int id2 = cellIndexes[j];
-
-            if (useDOD) {
-                float dX = dodSystem.getPosX(id2) - dodSystem.getPosX(id1);
-                float dY = dodSystem.getPosY(id2) - dodSystem.getPosY(id1);
-                float distanceSq = dX * dX + dY * dY;
-                float radiusSum = dodSystem.getRadius(id1) + dodSystem.getRadius(id2);
-                float radiusSumSq = radiusSum * radiusSum;
-
-                if (distanceSq < radiusSumSq && distanceSq > 0.0001f) {
-                    int tempVx = dodSystem.getVelX(id1);
-                    int tempVy = dodSystem.getVelY(id1);
-                    dodSystem.setVelX(id1, dodSystem.getVelX(id2));
-                    dodSystem.setVelY(id1, dodSystem.getVelY(id2));
-                    dodSystem.setVelX(id2, tempVx);
-                    dodSystem.setVelY(id2, tempVy);
-                }
-            } else {
-                // LOGICA OOP
-                
-            }
-        }
-    }
-}
-
-//parcurge gridul si cheama functia de mai sus pt fiecare vector 1D
+//parcurge gridul si cheama functia de rezolvare a coliziunilor pt fiecare vector 1D
 void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem /*, OOPSystem& oopSystem*/) {
     for (int g = 0; g < (int)grid.size(); g++) {
-        resolve_cell_collisions(useDOD, grid[g], dodSystem);
+        ObjectCollision(useDOD, grid[g], dodSystem);
     }
 }
 

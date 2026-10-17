@@ -120,7 +120,7 @@ struct DODSystem {
 
     // MOVEDOD FUNCTION
     void MoveDOD(int index, int &newX, int &newY){
-        if (index < 0 || index >= posX.size()) return; // verific daca indexul este valid
+        if (index < 0 || index >= (int)posX.size()) return; // verific daca indexul este valid
         posX[index] += velX[index];
         posY[index] += velY[index];
 
@@ -175,54 +175,54 @@ struct DODSystem {
 
     // DRAWONE FUNCTION
     void DrawOne(int index) {
-        if (index < 0 || index >= posX.size()) return; // verific daca indexul este valid
+        if (index < 0 || index >= (int)posX.size()) return; // verific daca indexul este valid
         DrawCircle((int)posX[index], (int)posY[index], radius[index], colors[index]);
     }
 
 
     int getPosX(int index) {
         // verific daca indexul este valid
-        if (index < 0 || index >= posX.size()) return -1; 
+        if (index < 0 || index >= (int)posX.size()) return -1; 
         return posX[index];
     }
     
     int getPosY(int index) {
         // verific daca indexul este valid
-        if (index < 0 || index >= posY.size()) return -1; 
+        if (index < 0 || index >= (int)posY.size()) return -1; 
         return posY[index];
     }
 
     int getVelX(int index) {
         // verific daca indexul este valid
-        if (index < 0 || index >= velX.size()) return -1; 
+        if (index < 0 || index >= (int)velX.size()) return -1; 
         return velX[index];
     }
 
         int getVelY(int index) {
         // verific daca indexul este valid
-        if (index < 0 || index >= velY.size()) return -1; 
+        if (index < 0 || index >= (int)velY.size()) return -1; 
         return velY[index];
     }
 
     int getRadius(int index) {
         // verific daca indexul este valid
-        if (index < 0 || index >= radius.size()) return -1; 
+        if (index < 0 || index >= (int)radius.size()) return -1; 
         return radius[index];
     }
 
     int getColorR(int index) {
         // verific daca indexul este valid
-        if (index < 0 || index >= colors.size()) return -1; 
+        if (index < 0 || index >= (int)colors.size()) return -1; 
         return colors[index].r;
     }
     int getColorG(int index) {
         // verific daca indexul este valid
-        if (index < 0 || index >= colors.size()) return -1; 
+        if (index < 0 || index >= (int)colors.size()) return -1; 
         return colors[index].g;
     }
     int getColorB(int index) {
         // verific daca indexul este valid
-        if (index < 0 || index >= colors.size()) return -1; 
+        if (index < 0 || index >= (int)colors.size()) return -1; 
         return colors[index].b;
     }
     int getCount(){
@@ -230,27 +230,27 @@ struct DODSystem {
         else return (int)posX.size();
     }
     void setPosX(int index, int value) {
-        if (index < 0 || index >= posX.size()) return; 
+        if (index < 0 || index >= (int)posX.size()) return; 
         posX[index] = value;
     }
     void setPosY(int index, int value) {
-        if (index < 0 || index >= posY.size()) return; 
+        if (index < 0 || index >= (int)posY.size()) return; 
         posY[index] = value;
     }
     void setVelX(int index, int value) {
-        if (index < 0 || index >= velX.size()) return; 
+        if (index < 0 || index >= (int)velX.size()) return; 
         velX[index] = value;
     }
     void setVelY(int index, int value) {
-        if (index < 0 || index >= velY.size()) return; 
+        if (index < 0 || index >= (int)velY.size()) return; 
         velY[index] = value;
     }
     void setRadius(int index, int value) {
-        if (index < 0 || index >= radius.size()) return; 
+        if (index < 0 || index >= (int)radius.size()) return; 
         radius[index] = value;
     }
     void setColor(int index, Color value) {
-        if (index < 0 || index >= colors.size()) return; 
+        if (index < 0 || index >= (int)colors.size()) return; 
         colors[index] = value;
     }
 };
