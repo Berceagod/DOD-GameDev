@@ -2,11 +2,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include "config.h"
 
-const int WORLD_W = 1000;
-const int WORLD_H = 1000;
-const int BALL_COUNT = 10;
-const float BALL_RADIUS = 50.0f;
+const int BALL_COUNT = 50;
 const float MIN_SPEED = 1.0f;
 const float MAX_SPEED = 3.0f;
 
@@ -20,11 +18,11 @@ class Bila{
 
     public:
     Bila(){
-        width = BALL_RADIUS;
-        xcoord = width + (float)rand() / RAND_MAX * (WORLD_W - 2 * width);
-        ycoord = width + (float)rand() / RAND_MAX * (WORLD_H - 2 * width);
+        width = Config::BALL_RADIUS;
+        xcoord = Config::BALL_START_X;
+        ycoord = Config::BALL_START_Y;
         float angle = ((float)rand() / RAND_MAX) * 6.2831853f;
-        float speed = MIN_SPEED + ((float)rand() / RAND_MAX) * (MAX_SPEED - MIN_SPEED);
+        float speed = Config::BALL_SPEED;
         xspeed = std::cos(angle) * speed;
         yspeed = std::sin(angle) * speed;
         
@@ -36,16 +34,16 @@ class Bila{
             xcoord = width;
             xspeed = std::fabs(xspeed); 
         }
-        if (xcoord > WORLD_W - width) { 
-            xcoord = WORLD_W - width;  
+        if (xcoord > Config::SCREEN_WIDTH - width) { 
+            xcoord = Config::SCREEN_WIDTH - width;  
             xspeed = -std::fabs(xspeed); 
         }
         if (ycoord < width) { 
             ycoord = width;
             yspeed =  std::fabs(yspeed); 
         }
-        if (ycoord > WORLD_H - width) { 
-            ycoord = WORLD_H - width;  
+        if (ycoord > Config::SCREEN_HEIGHT - width) { 
+            ycoord = Config::SCREEN_HEIGHT - width;  
             yspeed = -std::fabs(yspeed); 
         }
     }
@@ -74,13 +72,12 @@ class Bila{
     }
 };
 
-int main(void) 
+int test2(void) 
 {
     srand(time(0));
-    Color green = {20, 160, 133, 255};
 
-    InitWindow(1600, 1600, "Example");
-    SetTargetFPS(60);
+    InitWindow(1600, 1600, Config::WINDOW_TITLE);
+    SetTargetFPS(Config::TARGET_FPS);
 
     std::vector<Bila> bileVector;
     for (int i = 0; i < 10000; i++){
@@ -91,7 +88,7 @@ int main(void)
     while (WindowShouldClose() == false) 
     {
         BeginDrawing();
-        ClearBackground(green);
+        ClearBackground(Config::BACKGROUND);
         for(auto& bila : bileVector){
             DrawCircle(bila.getx(), bila.gety(), bila.getwidth(), WHITE);
             bila.moveBalls();
