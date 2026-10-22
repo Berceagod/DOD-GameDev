@@ -165,18 +165,21 @@ struct DODSystem {
     }
 
     // DRAWRGB FUNCTION
-    void DrawRGB() {
-        int count = posX.size();
+    void DrawRGB(const Texture2D& tex) {
+        const Rectangle src = { 0, 0, (float)tex.width, (float)tex.height };
+        int count = (int)posX.size();
         for (int i = 0; i < count; i++) {
-            // Fac casting la int pentru ca raylib foloseste int pentru pozitiile de desenat(nuamr intreg de pixeli)
-            DrawCircle((int)posX[i], (int)posY[i], radius[i], colors[i]);
-        }
+            float r = (float)radius[i];
+            Rectangle dst = { posX[i] - r, posY[i] - r, 2 * r, 2 * r };
+            DrawTexturePro(tex, src, dst, { 0, 0 }, 0.0f, colors[i]);
     }
+}
 
     // DRAWONE FUNCTION
     void DrawOne(int index) {
         if (index < 0 || index >= (int)posX.size()) return; // verific daca indexul este valid
-        DrawCircle((int)posX[index], (int)posY[index], radius[index], colors[index]);
+        //DrawCircle((int)posX[index], (int)posY[index], radius[index], colors[index]);
+        DrawPixel((int)posX[index], (int)posY[index], {255, 255, 255, 255});
     }
 
 

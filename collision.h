@@ -1,40 +1,57 @@
+#pragma once
 #include <vector>
 #include <cmath>
-#include <iostream>
-
-#include "config.h"
 #include "dod_system.h"
 
-// vezi dod_systems functie
-inline void ObjectCollision(bool useDOD, const std::vector<int>& cell_array, DODSystem& dodSystem /*, OOPSystem& oopSystem*/) {
-    int count = cell_array.size();
+inline void ObjectCollision(bool useDOD, const std::vector<int>& cell_array, DODSystem& dodSystem) {
+    if (!useDOD) return;
+
+    int count = static_cast<int>(cell_array.size());
     if (count < 2) return;
 
     for (int i = 0; i < count - 1; i++) {
         for(int j = i + 1; j < count; j++) {
-            //Calcul distanta euclidiana intre doua cercuri
+            int id1 = cell_array[i];
+            int id2 = cell_array[j];
 
-            // oop - wip
-
-            // dod
-            float dX = dodSystem.getPosX(cell_array[j]) - dodSystem.getPosX(cell_array[i]);
-            float dY = dodSystem.getPosY(cell_array[j]) - dodSystem.getPosY(cell_array[i]);
+            float dX = static_cast<float>(dodSystem.posX[id2] - dodSystem.posX[id1]);
+            float dY = static_cast<float>(dodSystem.posY[id2] - dodSystem.posY[id1]);
+            float radiusSum = static_cast<float>(dodSystem.radius[id1] + dodSystem.radius[id2]);
             float distanceSq = dX * dX + dY * dY;
-            float radiusSum = dodSystem.getRadius(cell_array[i]) + dodSystem.getRadius(cell_array[j]);
-            float radiusSumSq = radiusSum * radiusSum;
-    
-            //verific patratul distantelor ca e mai cost efficient decat sa fac sqrt
-            //fac verificarea > 0.0001f ca sa nu am eroare la impartirea la 0
-            if(distanceSq < radiusSumSq && distanceSq > 0.0001f) {
-                //coliziune cu efect elastic
-                float tempVx = dodSystem.getVelX(cell_array[i]);
-                float tempVy = dodSystem.getVelY(cell_array[i]);
-                // schimbam vitezele intre cele doua cercuri
-                dodSystem.setVelX(cell_array[i], dodSystem.getVelX(cell_array[j]));
-                dodSystem.setVelY(cell_array[i], dodSystem.getVelY(cell_array[j]));
-                dodSystem.setVelX(cell_array[j], tempVx);
-                dodSystem.setVelY(cell_array[j], tempVy);
+
+            if (distanceSq >= radiusSum * radiusSum) continue;
+
+            float distance = std::sqrt(distanceSq);
+            float nx = 1.0f;
+            float ny = 0.0f;
+            if (distance > 0.0001f) {
+                nx = dX / distance;
+                ny = dY / distance;
             }
+
+
+            float halfOverlap = (radiusSum - distance) * 0.5f;
+            int sepX = static_cast<int>(std::ceil(std::fabs(nx) * halfOverlap));
+            int sepY = static_cast<int>(std::ceil(std::fabs(ny) * halfOverlap));
+            if (nx < 0.0f) sepX = -sepX;
+            if (ny < 0.0f) sepY = -sepY;
+
+            dodSystem.posX[id1] -= sepX;
+            dodSystem.posY[id1] -= sepY;
+            dodSystem.posX[id2] += sepX;
+            dodSystem.posY[id2] += sepY;
+
+            float relativeNormalVelocity =
+                (dodSystem.velX[id2] - dodSystem.velX[id1]) * nx +
+                (dodSystem.velY[id2] - dodSystem.velY[id1]) * ny;
+            if (relativeNormalVelocity >= 0.0f) continue;
+
+            int impulseX = static_cast<int>(std::round(relativeNormalVelocity * nx));
+            int impulseY = static_cast<int>(std::round(relativeNormalVelocity * ny));
+            dodSystem.velX[id1] += impulseX;
+            dodSystem.velY[id1] += impulseY;
+            dodSystem.velX[id2] -= impulseX;
+            dodSystem.velY[id2] -= impulseY;
         }
     }
 }

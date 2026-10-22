@@ -9,26 +9,47 @@
 #include "dod_system.h"
 #include "collision.h"
 
-void check_mouse(bool useDOD, DODSystem& dodSystem);
+void check_mouse(bool useDOD, DODSystem& dodSystem,int spawnCount, float mouseRadius);
 //TODO sa fie gen un singur vector, si sa apelezi cu index, in loc sa fie vector de vectori.
 void clear_grid(std::vector<std::vector<int>>& grid);
 void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows);
 void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem);
-void draw_balls(bool useDOD, DODSystem& dodSystem);
+void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex);
+
+
+//ball speed
+int maxSpeed = 5;
+int minSpeed = 2;
+int radius = 3;
 
 int main(void)
 {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
     InitWindow(Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT, Config::WINDOW_TITLE);
+
+
+const int TEX = 64;  // rezoluție mare, ca să arate bine la scalare
+Image img = GenImageColor(TEX, TEX, BLANK);
+ImageDrawCircle(&img, TEX / 2, TEX / 2, TEX / 2 - 1, WHITE);
+Texture2D ballTex = LoadTextureFromImage(img);
+UnloadImage(img);                                  // imaginea din RAM nu mai trebuie
+SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la scalare
+
+
     SetTargetFPS(Config::TARGET_FPS);
     rlImGuiSetup(true);
     
     // Variabila care controleaza daca se foloseste DOD sau OOP
     bool useDOD = true; 
 
+    //numarul de  bile spawante per click
+    int spawnCount = 10;
+    //raza de spawn a bilelor
+    float mouseBrushRadius = 50.0f;
+
     // Initializare Grid
-    int CellSize = 100;
+    int CellSize = 7;
     std::vector<std::vector<int>> grid; 
     int cols = Config::SCREEN_WIDTH / CellSize;
     int rows = Config::SCREEN_HEIGHT / CellSize;
@@ -45,7 +66,7 @@ int main(void)
         Benchmark::Begin();
 
         // spawn bile
-        check_mouse(useDOD, dodSystem);
+        check_mouse(useDOD, dodSystem, spawnCount, mouseBrushRadius);
 
         //golire grid
         clear_grid(grid);
@@ -58,8 +79,15 @@ int main(void)
 
         //draw
         BeginDrawing();
+        
+        
+
         ClearBackground(Config::BACKGROUND);
-        draw_balls(useDOD, dodSystem);
+        draw_balls(useDOD, dodSystem, ballTex);
+        //deseneaza brushul
+        DrawCircle(GetMouseX(), GetMouseY(), mouseBrushRadius, { 255, 255, 255, 50 });
+        DrawCircleLines(GetMouseX(), GetMouseY(), mouseBrushRadius, { 255, 255, 255, 150 }); // Un mic contur
+        
         Benchmark::End();
 
         // ---- GUI ----
@@ -70,7 +98,13 @@ int main(void)
         
         //da toggle din GUI la useDOD intre true si false
         ImGui::Checkbox("Use DOD)", &useDOD);
-        
+
+        ImGui::Separator();
+        ImGui::SliderInt("Numar Bile / Click", &spawnCount, 1, 10000);
+        ImGui::SliderFloat("Mouse Size", &mouseBrushRadius, 10.0f, 300.0f);
+        ImGui::Separator();
+        ImGui::SliderInt("Viteza Maxima", &maxSpeed, minSpeed, 30);
+        ImGui::SliderInt("Raza Bilelor", &radius, 1, 30);
         int count = useDOD ? dodSystem.getCount() : 0; // oopSystem.getCount()
         ImGui::Text("Total Balls: %d", count);
         
@@ -85,29 +119,57 @@ int main(void)
     }
 
     rlImGuiShutdown();
+    UnloadTexture(ballTex);
     CloseWindow();
     return 0;
 }
 
 // Spawneaza o minge cu stats-uri random la pozitia mouse-ului 
-void check_mouse(bool useDOD, DODSystem& dodSystem /*, OOPSystem& oopSystem*/) {
+void check_mouse(bool useDOD, DODSystem& dodSystem /*, OOPSystem& oopSystem*/,int spawnCount, float mouseRadius) {
+    //daca se da click pe slidere, nu se declanseaza spawnul
+     if (ImGui::GetIO().WantCaptureMouse) return;
+
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         int mX = GetMouseX();
         int mY = GetMouseY();
-        int vX = (rand() % 10) - 5;
-        int vY = (rand() % 10) - 5;
-        int radius = 5;
-        Color c = { 
-            (unsigned char)(rand() % 256), 
-            (unsigned char)(rand() % 256), 
-            (unsigned char)(rand() % 256), 
-            255 
-        };
-        
-        if (useDOD) {
-            dodSystem.SpawnOne(mX, mY, vX, vY, radius, c);
-        } else {
-            // oopSystem.SpawnOne(mX, mY, vX, vY, radius, c);
+        int rInt = (int)mouseRadius;
+
+        // spawn balls
+        for (int i = 0; i < spawnCount; i++) {
+            
+            int offsetX, offsetY;
+            
+            //generam puncte intr-un patrat pana nimerim unul in cerc
+            do {
+                offsetX = (rand() % (2 * rInt + 1)) - rInt;
+                offsetY = (rand() % (2 * rInt + 1)) - rInt;
+            } while (offsetX * offsetX + offsetY * offsetY > rInt * rInt);
+
+            //adaugam offsetul generat la pozitia mouse-ului
+            int finalX = mX + offsetX;
+            int finalY = mY + offsetY;
+
+
+            int vX = (rand() % (maxSpeed - minSpeed + 1)) + minSpeed;
+            int vY = (rand() % (maxSpeed - minSpeed + 1)) + minSpeed;
+
+            // 50% sanse sa o ia in directia opusa (negativa)
+            if (rand() % 2 == 0) vX = -vX;
+            if (rand() % 2 == 0) vY = -vY;
+
+            
+            Color c = { 
+                (unsigned char)(rand() % 256), 
+                (unsigned char)(rand() % 256), 
+                (unsigned char)(rand() % 256), 
+                255 
+            };
+            
+            if (useDOD) {
+                dodSystem.SpawnOne(finalX, finalY, vX, vY, radius, c);
+            } else {
+                // oopSystem.SpawnOne(finalX, finalY, vX, vY, radius, c);
+            }
         }
     }
 }
@@ -165,9 +227,9 @@ void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& gr
 }
 
 //Functie pt Draw
-void draw_balls(bool useDOD, DODSystem& dodSystem /*, OOPSystem& oopSystem*/) {
+void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex /*, OOPSystem& oopSystem*/) {
     if (useDOD) {
-        dodSystem.DrawRGB();
+        dodSystem.DrawRGB(ballTex);
     } else {
         // oopSystem.DrawRGB();
     }
