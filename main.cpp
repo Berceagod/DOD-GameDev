@@ -8,13 +8,14 @@
 #include "benchmark.h"
 #include "dod_system.h"
 #include "collision.h"
+#include "oop_system.h"
 
-void check_mouse(bool useDOD, DODSystem& dodSystem,int spawnCount, float mouseRadius);
+void check_mouse(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem,int spawnCount, float mouseRadius);
 //TODO sa fie gen un singur vector, si sa apelezi cu index, in loc sa fie vector de vectori.
 void clear_grid(std::vector<std::vector<int>>& grid);
-void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows);
-void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem);
-void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex);
+void update_and_populate_grid(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem, std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows);
+void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem, OOPSystem& oopSystem);
+void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex, OOPSystem& oopSystem);
 
 
 //ball speed
@@ -41,7 +42,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
     rlImGuiSetup(true);
     
     // Variabila care controleaza daca se foloseste DOD sau OOP
-    bool useDOD = true; 
+    bool useDOD = false; 
 
     //numarul de  bile spawante per click
     int spawnCount = 10;
@@ -59,23 +60,23 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
 
     // Initializare Sisteme
     DODSystem dodSystem;
-    // OOPSystem oopSystem;
+    OOPSystem oopSystem;
 
     while (!WindowShouldClose())
     {
         Benchmark::Begin();
 
         // spawn bile
-        check_mouse(useDOD, dodSystem, spawnCount, mouseBrushRadius);
+        check_mouse(useDOD, dodSystem, oopSystem,spawnCount, mouseBrushRadius);
 
         //golire grid
         clear_grid(grid);
 
         //miscare si updatare grid
-        update_and_populate_grid(useDOD, dodSystem, grid, CellSize, cols, rows);
+        update_and_populate_grid(useDOD, dodSystem,oopSystem, grid, CellSize, cols, rows);
 
         //coliziune
-        resolve_all_collisions(useDOD, grid, dodSystem);
+        resolve_all_collisions(useDOD, grid, dodSystem, oopSystem);
 
         //draw
         BeginDrawing();
@@ -83,7 +84,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         
 
         ClearBackground(Config::BACKGROUND);
-        draw_balls(useDOD, dodSystem, ballTex);
+        draw_balls(useDOD, dodSystem, ballTex,oopSystem);
         //deseneaza brushul
         DrawCircle(GetMouseX(), GetMouseY(), mouseBrushRadius, { 255, 255, 255, 50 });
         DrawCircleLines(GetMouseX(), GetMouseY(), mouseBrushRadius, { 255, 255, 255, 150 }); // Un mic contur
@@ -105,12 +106,12 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         ImGui::Separator();
         ImGui::SliderInt("Viteza Maxima", &maxSpeed, minSpeed, 30);
         ImGui::SliderInt("Raza Bilelor", &radius, 1, 30);
-        int count = useDOD ? dodSystem.getCount() : 0; // oopSystem.getCount()
+        int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
         ImGui::Text("Total Balls: %d", count);
         
         if (ImGui::Button("Clear Toate Bilele")) {
             if (useDOD) dodSystem.Despawn(0);
-            // else oopSystem.Despawn(0);
+            else oopSystem.Despawn(0);
         }
         
         ImGui::End();
@@ -125,7 +126,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
 }
 
 // Spawneaza o minge cu stats-uri random la pozitia mouse-ului 
-void check_mouse(bool useDOD, DODSystem& dodSystem /*, OOPSystem& oopSystem*/,int spawnCount, float mouseRadius) {
+void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int spawnCount, float mouseRadius) {
     //daca se da click pe slidere, nu se declanseaza spawnul
      if (ImGui::GetIO().WantCaptureMouse) return;
 
@@ -168,7 +169,7 @@ void check_mouse(bool useDOD, DODSystem& dodSystem /*, OOPSystem& oopSystem*/,in
             if (useDOD) {
                 dodSystem.SpawnOne(finalX, finalY, vX, vY, radius, c);
             } else {
-                // oopSystem.SpawnOne(finalX, finalY, vX, vY, radius, c);
+                oopSystem.SpawnOne(finalX, finalY, vX, vY, radius, c);
             }
         }
     }
@@ -182,8 +183,8 @@ void clear_grid(std::vector<std::vector<int>>& grid) {
 }
 
 //face miscarea bilelor si dupa updateaza gridul
-void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, /* OOPSystem& oopSystem, */ std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows) {
-    int currentCount = useDOD ? dodSystem.getCount() : 0; 
+void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem,  std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows) {
+    int currentCount = useDOD ? dodSystem.getCount() : oopSystem.getCount(); 
     
     for(int i = 0; i < currentCount; i++) {
         int x = 0, y = 0;
@@ -194,8 +195,8 @@ void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, /* OOPSystem& o
             dodSystem.MoveDOD(i, x, y);
             raza = dodSystem.getRadius(i);
         } else {
-            // oopSystem.MoveOOP(i, Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT, x, y);
-            // raza = oopSystem.getRadius(i);
+            oopSystem.moveOOP(i);
+            oopSystem.getBallData(i, x, y, raza);
         }
 
         //calcul celule din grid atinse
@@ -220,17 +221,17 @@ void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, /* OOPSystem& o
 }
 
 //parcurge gridul si cheama functia de rezolvare a coliziunilor pt fiecare vector 1D
-void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem /*, OOPSystem& oopSystem*/) {
+void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem, OOPSystem& oopSystem) {
     for (int g = 0; g < (int)grid.size(); g++) {
-        ObjectCollision(useDOD, grid[g], dodSystem);
+        ObjectCollision(useDOD, grid[g], dodSystem, oopSystem);
     }
 }
 
 //Functie pt Draw
-void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex /*, OOPSystem& oopSystem*/) {
+void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex , OOPSystem& oopSystem) {
     if (useDOD) {
         dodSystem.DrawRGB(ballTex);
     } else {
-        // oopSystem.DrawRGB();
+        oopSystem.DrawRGB(ballTex);
     }
 }
