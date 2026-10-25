@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #include "imgui.h"
 #include "rlImGui.h"
 #include "config.h"
@@ -10,7 +11,7 @@
 #include "collision.h"
 #include "oop_system.h"
 
-void check_mouse(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem,int spawnCount, float mouseRadius, bool magnetMode);
+void check_mouse(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem,int spawnCount, float mouseRadius, bool magnetMode, bool& rightMouseActive);
 //TODO sa fie gen un singur vector, si sa apelezi cu index, in loc sa fie vector de vectori.
 void clear_grid(std::vector<std::vector<int>>& grid);
 void update_and_populate_grid(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem, std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows);
@@ -52,6 +53,9 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
     // variabila de toggle pt repulse/magnet (click dreapta)
     bool magnetMode = false;
 
+    // toogle pentru mentinerea activa a functiei de magnet/repulsie
+    bool rightMouseActive = false;
+
     //numarul de  bile spawante per click
     int spawnCount = 10;
     //raza de spawn a bilelor
@@ -75,7 +79,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         Benchmark::Begin();
 
         // spawn bile
-        check_mouse(useDOD, dodSystem, oopSystem,spawnCount, mouseBrushRadius, magnetMode);
+        check_mouse(useDOD, dodSystem, oopSystem,spawnCount, mouseBrushRadius, magnetMode, rightMouseActive);
 
         //golire grid
         clear_grid(grid);
@@ -126,6 +130,9 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         ImGui::Separator();
         ImGui::SliderInt("Viteza Maxima", &maxSpeed, minSpeed, 30);
         ImGui::SliderInt("Raza Bilelor", &radius, 1, 30);
+        ImGui::Separator();
+        ImGui::Checkbox("Repel / Magnet mode", &magnetMode);
+        ImGui::Separator();
         int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
         ImGui::Text("Total Balls: %d", count);
         
@@ -146,13 +153,16 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
 }
 
 // Spawneaza o minge cu stats-uri random la pozitia mouse-ului 
-void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int spawnCount, float mouseRadius, bool magnetMode) {
+void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int spawnCount, float mouseRadius, bool magnetMode, bool& rightMouseActive) {
     //daca se da click pe slidere, nu se declanseaza spawnul
      if (ImGui::GetIO().WantCaptureMouse) return;
 
+    int mX = GetMouseX();
+    int mY = GetMouseY();
+
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        int mX = GetMouseX();
-        int mY = GetMouseY();
+        // int mX = GetMouseX();
+        // int mY = GetMouseY();
         int rInt = (int)mouseRadius;
 
         // spawn balls
@@ -194,14 +204,17 @@ void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int sp
         }
     }
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-        int mX = GetMouseX();
-        int mY = GetMouseY();
+        rightMouseActive = !rightMouseActive;
+    }
+    
+    if(rightMouseActive) {
         if (!magnetMode) {
             apply_repulsion_logic(useDOD, dodSystem, oopSystem, mX, mY, mouseRadius);
         } else {
             apply_magnetism_logic(useDOD, dodSystem, oopSystem, mX, mY, mouseRadius);
         }
     }
+
 }
 
 //goleste vectorii de grid
@@ -265,6 +278,7 @@ void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex , OO
     }
 }
 
+// aplica functionalitatea de repulsion / respingere a bilelor in afara razei cursorului
 void apply_repulsion_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem, int mX, int mY, float mouseRadius) {
     int rInt = (int)mouseRadius;
     int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
@@ -294,11 +308,11 @@ void apply_repulsion_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSyst
     }
 }
 
+// aplica functionalitatea de magnetism asupra bilelor in jurul cursorului
 void apply_magnetism_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem, int mX, int mY, float mouseRadius) {
-    // int rInt = (int)mouseRadius;
+    
     int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
-    float rangeSq = mouseRadius * mouseRadius;
-    const int strength = 2;
+    float rangeSq = mouseRadius * mouseRadius; // raza la patrat, nu se face sqrt la fiecare bila
 
     for (int i = 0; i < count; i++) {
         int x = 0, y = 0, r = 0;
@@ -308,5 +322,41 @@ void apply_magnetism_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSyst
             oopSystem.getBallData(i, x, y, r);
         }
 
+        //vector de la bila la cursor
+        float dX = static_cast<float>(mX - x);
+        float dY = static_cast<float>(mY - y);
+
+        float distanceSq = dX * dX + dY * dY;
+
+        // daca bila e in afara razei sau pe cursor, nu se face nimic
+        if(distanceSq > rangeSq || distanceSq < 1.0f) continue;
+
+        // viteze (velocity) noi, folosite pentru directia bilelor
+        int vx = 0, vy = 0;
+
+        if(distanceSq >= 4.0f) {
+            float dist = std::sqrt(distanceSq);
+            float speed = dist / 4.0f; // viteza depinde de distanta fata de cursor, daca sunt aproape incetinesc
+
+            if (speed > static_cast<float>(maxSpeed)) {
+                speed = static_cast<float>(maxSpeed);
+            }
+            if (speed < static_cast<float>(minSpeed)) {
+                speed = static_cast<float>(minSpeed);
+            }
+
+            // directii normalizate pentru vitezele bilelor
+            vx = static_cast<int>(std::round(dX / dist * speed));
+            vy = static_cast<int>(std::round(dY / dist * speed));
+        }
+
+        // se suprascriu vitezele bilelor cu cele calculate mai sus
+        if(useDOD) {
+            dodSystem.velX[i] = vx;
+            dodSystem.velY[i] = vy;
+        } else {
+            oopSystem.bileArrayOOP[i].setVelX(vx);
+            oopSystem.bileArrayOOP[i].setVelY(vy);
+        }
     }
 }
