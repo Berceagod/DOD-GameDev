@@ -138,7 +138,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         ImGui::SliderInt("Viteza Maxima", &maxSpeed, minSpeed, 30);
         ImGui::SliderInt("Raza Bilelor", &radius, 1, 30);
         ImGui::Separator();
-        ImGui::Checkbox("Repel / Magnet mode", &magnetMode);
+        ImGui::Checkbox("Repel / Magnet mode (off - Repel, on - Magnet)", &magnetMode);
         ImGui::Separator();
 
         ImGui::Checkbox("Gravitatie (Tasta G)", &enableGravity);
