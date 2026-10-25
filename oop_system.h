@@ -94,7 +94,11 @@ struct OOPSystem{
         if( newCount < oldCount){
             for (int i = 0; i < oldCount - newCount; i++) {
                 if(bileArrayOOP.empty()) break;
-                bileArrayOOP.erase(bileArrayOOP.begin() + rand() % bileArrayOOP.size());
+                
+                int randomIndex = rand() % bileArrayOOP.size();
+                bileArrayOOP[randomIndex] = bileArrayOOP.back();
+                bileArrayOOP.pop_back();
+                
             }
         }
     }

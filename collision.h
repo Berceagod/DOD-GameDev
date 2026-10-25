@@ -44,8 +44,8 @@ inline void ObjectCollision(bool useDOD, const std::vector<int>& cell_array, DOD
             }else{
             oopSystem.bileArrayOOP[id1].setPosX(oopSystem.bileArrayOOP[id1].getX() - sepX);
             oopSystem.bileArrayOOP[id1].setPosY(oopSystem.bileArrayOOP[id1].getY() - sepY);
-            oopSystem.bileArrayOOP[id2].setPosX(oopSystem.bileArrayOOP[id1].getX() - sepX);
-            oopSystem.bileArrayOOP[id2].setPosY(oopSystem.bileArrayOOP[id1].getY() - sepY);
+            oopSystem.bileArrayOOP[id2].setPosX(oopSystem.bileArrayOOP[id2].getX() + sepX); 
+            oopSystem.bileArrayOOP[id2].setPosY(oopSystem.bileArrayOOP[id2].getY() + sepY); 
             }
             float relativeNormalVelocity = useDOD ?
                 (dodSystem.velX[id2] - dodSystem.velX[id1]) * nx +
