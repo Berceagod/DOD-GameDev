@@ -217,10 +217,12 @@ void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int sp
             }
         }
     }
+    // toggle pentru functia activata de right click
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
         rightMouseActive = !rightMouseActive;
     }
     
+    // daca functia de mangetism/repel este activa, se verifica care din cele doua este activata
     if(rightMouseActive) {
         if (!magnetMode) {
             apply_repulsion_logic(useDOD, dodSystem, oopSystem, mX, mY, mouseRadius);
@@ -345,7 +347,7 @@ void apply_magnetism_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSyst
         // daca bila e in afara razei sau pe cursor, nu se face nimic
         if(distanceSq > rangeSq || distanceSq < 1.0f) continue;
 
-        // viteze (velocity) noi, folosite pentru directia bilelor
+        // viteze  noi, folosite pentru directia bilelor
         int vx = 0, vy = 0;
 
         if(distanceSq >= 4.0f) {
