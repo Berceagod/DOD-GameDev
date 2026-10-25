@@ -75,7 +75,7 @@ inline void ObjectCollision(bool useDOD, const std::vector<int>& cell_array, DOD
             //bilele fac schimb de viteze pe directia unghiului de impact
             int impulseX = static_cast<int>(std::round(relativeNormalVelocity * nx));
             int impulseY = static_cast<int>(std::round(relativeNormalVelocity * ny));
-            
+
             if(useDOD){
             dodSystem.velX[id1] += impulseX;
             dodSystem.velY[id1] += impulseY;

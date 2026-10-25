@@ -25,7 +25,10 @@ class Bila {
     }
 
 
-    void moveBall(){
+    void moveBall(bool useGravity,int gravityForce,float bounce){
+        if (useGravity) {
+            velY += gravityForce;
+        }
         posX+=velX;
         posY+=velY;
         if (posX < radius) { 
@@ -41,8 +44,21 @@ class Bila {
             velY =  std::fabs(velY); 
         }
         if (posY > Config::SCREEN_HEIGHT - radius) { 
+
             posY = Config::SCREEN_HEIGHT - radius;  
-            velY = -std::fabs(velY); 
+            if (useGravity) {
+                // daca avem gravitatie bila pierde viteza la bounce-ul cu podeaua
+                if (velY > gravityForce + 1) {
+                    velY = static_cast<int>(-std::fabs(velY) * bounce);
+                } else {
+                    velY = 0; 
+                }
+                //incetinire putin miscarea pe x sa fie mai realist
+                velX = static_cast<int>(velX * 0.99f); 
+            } else {
+                velY = -std::fabs(velY); 
+            }
+           
         }
     }
 
@@ -94,7 +110,7 @@ struct OOPSystem{
         if( newCount < oldCount){
             for (int i = 0; i < oldCount - newCount; i++) {
                 if(bileArrayOOP.empty()) break;
-                
+
                 int randomIndex = rand() % bileArrayOOP.size();
                 bileArrayOOP[randomIndex] = bileArrayOOP.back();
                 bileArrayOOP.pop_back();
@@ -102,8 +118,8 @@ struct OOPSystem{
             }
         }
     }
-    void moveOOP(int i){
-        bileArrayOOP[i].moveBall();
+    void moveOOP(int i,bool useGravity, int gravityForce, float bounce){
+        bileArrayOOP[i].moveBall(useGravity, gravityForce, bounce);
     }
     void getBallData(int i, int &x, int &y, int &r){
         x = bileArrayOOP[i].getX();
