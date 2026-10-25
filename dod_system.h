@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include "raylib.h"
 #include "config.h"
+#include <cmath>
 /// @brief metoda DOD de rezolvare
 //FUNCTII: SpawnOne(), Spawn(), Despawn(), Move(), ResolveCollisions(), DrawRGB(), DrawOne()
 // Getteri pentru toate proprietatile|Setteri pentru toate proprietatile
@@ -119,8 +120,13 @@ struct DODSystem {
     }
 
     // MOVEDOD FUNCTION
-    void MoveDOD(int index, int &newX, int &newY){
+    void MoveDOD(int index, int &newX, int &newY, bool useGravity, int gravityForce, float bounce){
         if (index < 0 || index >= (int)posX.size()) return; // verific daca indexul este valid
+
+        if (useGravity) {
+            velY[index] += gravityForce;
+        }
+
         posX[index] += velX[index];
         posY[index] += velY[index];
 
@@ -128,7 +134,20 @@ struct DODSystem {
         if (posX[index] - radius[index] < 0) { posX[index] = radius[index]; velX[index] *= -1; }
         if (posX[index] + radius[index] > Config::SCREEN_WIDTH) { posX[index] = Config::SCREEN_WIDTH - radius[index]; velX[index] *= -1; }
         if (posY[index] - radius[index] < 0) { posY[index] = radius[index]; velY[index] *= -1; }
-        if (posY[index] + radius[index] > Config::SCREEN_HEIGHT) { posY[index] = Config::SCREEN_HEIGHT - radius[index]; velY[index] *= -1; }
+        // podeaua
+        if (posY[index] + radius[index] > Config::SCREEN_HEIGHT) { 
+            posY[index] = Config::SCREEN_HEIGHT - radius[index]; 
+            if (useGravity) {
+                if (velY[index] > gravityForce + 1) {
+                    velY[index] = static_cast<int>(-std::fabs(velY[index]) * bounce);
+                } else {
+                    velY[index] = 0; 
+                }
+                velX[index] = static_cast<int>(velX[index] * 0.99f);
+            } else {
+                velY[index] = -std::fabs(velY[index]); 
+            }
+        }
 
         newX = posX[index];
         newY = posY[index];

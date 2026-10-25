@@ -14,7 +14,7 @@
 void check_mouse(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem,int spawnCount, float mouseRadius, bool magnetMode, bool& rightMouseActive);
 //TODO sa fie gen un singur vector, si sa apelezi cu index, in loc sa fie vector de vectori.
 void clear_grid(std::vector<std::vector<int>>& grid);
-void update_and_populate_grid(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem, std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows);
+void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem, std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows, bool useGravity, int gravityForce, float bounce);
 void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem, OOPSystem& oopSystem);
 void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex, OOPSystem& oopSystem);
 void apply_repulsion_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem, int mX, int mY, float mouseRadius);
@@ -74,10 +74,17 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
     DODSystem dodSystem;
     OOPSystem oopSystem;
 
+    bool enableGravity = false;
+    int gravityForce = 1;      // cat de repede accelereaza in jos
+    float bounce = 0.7f;
+
     while (!WindowShouldClose())
     {
         Benchmark::Begin();
 
+        if (IsKeyPressed(KEY_G)) {
+            enableGravity = !enableGravity;
+        }
         // spawn bile
         check_mouse(useDOD, dodSystem, oopSystem,spawnCount, mouseBrushRadius, magnetMode, rightMouseActive);
 
@@ -85,7 +92,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         clear_grid(grid);
 
         //miscare si updatare grid
-        update_and_populate_grid(useDOD, dodSystem,oopSystem, grid, CellSize, cols, rows);
+        update_and_populate_grid(useDOD, dodSystem, oopSystem, grid, CellSize, cols, rows, enableGravity, gravityForce, bounce);
 
         if (enableHeatmap) {
             if (useDOD) {
@@ -133,6 +140,13 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         ImGui::Separator();
         ImGui::Checkbox("Repel / Magnet mode", &magnetMode);
         ImGui::Separator();
+
+        ImGui::Checkbox("Gravitatie (Tasta G)", &enableGravity);
+        if (enableGravity) {
+            ImGui::SliderInt("Forta Gravitatie", &gravityForce, 1, 5);
+            ImGui::SliderFloat("Saritura", &bounce, 0.1f, 1.0f);
+        }
+
         int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
         ImGui::Text("Total Balls: %d", count);
         
@@ -225,7 +239,7 @@ void clear_grid(std::vector<std::vector<int>>& grid) {
 }
 
 //face miscarea bilelor si dupa updateaza gridul
-void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem,  std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows) {
+void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem,  std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows,bool useGravity, int gravityForce, float bounce) {
     int currentCount = useDOD ? dodSystem.getCount() : oopSystem.getCount(); 
     
     for(int i = 0; i < currentCount; i++) {
@@ -234,10 +248,10 @@ void update_and_populate_grid(bool useDOD, DODSystem& dodSystem, OOPSystem& oopS
 
         //miscare in functie de metoda selectata
         if (useDOD) {
-            dodSystem.MoveDOD(i, x, y);
+            dodSystem.MoveDOD(i, x, y,useGravity,gravityForce,bounce);
             raza = dodSystem.getRadius(i);
         } else {
-            oopSystem.moveOOP(i);
+            oopSystem.moveOOP(i,useGravity,gravityForce,bounce);
             oopSystem.getBallData(i, x, y, raza);
         }
 
