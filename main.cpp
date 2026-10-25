@@ -85,6 +85,9 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         if (IsKeyPressed(KEY_G)) {
             enableGravity = !enableGravity;
         }
+        if (IsKeyPressed(KEY_I)) {
+            magnetMode = !magnetMode;
+        }
         // spawn bile
         check_mouse(useDOD, dodSystem, oopSystem,spawnCount, mouseBrushRadius, magnetMode, rightMouseActive);
 
@@ -138,7 +141,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         ImGui::SliderInt("Viteza Maxima", &maxSpeed, minSpeed, 30);
         ImGui::SliderInt("Raza Bilelor", &radius, 1, 30);
         ImGui::Separator();
-        ImGui::Checkbox("Repel / Magnet mode (off - Repel, on - Magnet)", &magnetMode);
+        ImGui::Checkbox("Repel / Magnet mode (off - Repel, on - Magnet) (Tasta I pentru toggle)", &magnetMode);
         ImGui::Separator();
 
         ImGui::Checkbox("Gravitatie (Tasta G)", &enableGravity);
@@ -306,20 +309,23 @@ void apply_repulsion_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSyst
             oopSystem.getBallData(i, x, y, r);
         }
 
-        int dx = mX - x;
-        int dy = mY - y;
-        int distanceSq = dx * dx + dy * dy;
+        float dX = static_cast<float>(mX - x);
+        float dY = static_cast<float>(mY - y);
+        float distanceSq = dX * dX + dY * dY;
         int radiusSum = r + rInt;
-        float relX = 50/(float)dx;
-        float relY = 50/(float)dy;
-        if(distanceSq <= radiusSum * radiusSum) {
-            if(useDOD) {
-                dodSystem.velX[i] =-1*(1+ relX);
-                dodSystem.velY[i] =-1*(1+ relY);
-            } else {
-                oopSystem.bileArrayOOP[i].setVelX(-1*(1+ relX));
-                oopSystem.bileArrayOOP[i].setVelY(-1*(1+ relY));
-            }
+
+        if(distanceSq > radiusSum*radiusSum) continue;
+
+        int vx, vy;
+        float dist = std::sqrt(distanceSq);
+        vx = static_cast<int>(std::round(dX / dist * 5.0f));
+        vy = static_cast<int>(std::round(dY / dist * 5.0f));
+        if(useDOD) {
+            dodSystem.velX[i] = -vx;
+            dodSystem.velY[i] = -vy;
+        } else {
+            oopSystem.bileArrayOOP[i].setVelX(-vx);
+            oopSystem.bileArrayOOP[i].setVelY(-vy);
         }
     }
 }
