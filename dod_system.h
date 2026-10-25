@@ -288,4 +288,9 @@ struct DODSystem {
         if (index < 0 || index >= (int)colors.size()) return; 
         colors[index] = value;
     }
+    void getBallData(int i, int &x, int &y, int &r){
+        x = posX[i];
+        y = posY[i];
+        r = radius[i];
+    }
 };

@@ -188,6 +188,36 @@ void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int sp
             }
         }
     }
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        int mX = GetMouseX();
+        int mY = GetMouseY();
+        int rInt = (int)mouseRadius;
+        int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
+        for (int i = 0; i < count; i++) {
+            int x = 0, y = 0, r = 0;
+            if (useDOD) {
+                dodSystem.getBallData(i, x, y, r);
+            } else {
+                oopSystem.getBallData(i, x, y, r);
+            }
+
+            int dx = mX - x;
+            int dy = mY - y;
+            int distanceSq = dx * dx + dy * dy;
+            int radiusSum = r + rInt;
+            float relX = 50/(float)dx;
+            float relY = 50/(float)dy;
+            if(distanceSq <= radiusSum * radiusSum) {
+                if(useDOD) {
+                    dodSystem.velX[i] =-1*(1+ relX);
+                    dodSystem.velY[i] =-1*(1+ relY);
+                } else {
+                    oopSystem.bileArrayOOP[i].setVelX(-1*(1+ relX));
+                    oopSystem.bileArrayOOP[i].setVelY(-1*(1+ relY));
+                }
+            }
+        }
+    }
 }
 
 //goleste vectorii de grid
