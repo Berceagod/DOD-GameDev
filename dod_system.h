@@ -133,6 +133,38 @@ struct DODSystem {
         newX = posX[index];
         newY = posY[index];
     }
+
+    // VELOCITY HEATMAP FUNCTION
+    void UpdateVelocityHeatmap(int maxSpeed) {
+        int count = (int)posX.size();
+
+        //maresc usor pragul maxim de referință (cu 15%) luat din sliderul de viteza maxima din main.cpp
+        //din cauza ca sistemul meu poate genera, in unele cazuri, energie, 
+        //iar in timp majoritatea bileleor vor ajunge la viteza maxima, ba chiar sa o depaseasca
+        float effectiveMaxSpeed = (float)maxSpeed * 1.15f;
+
+        // calculez patratul vitezei maxime efective
+        float maxSpeedSq = static_cast<float>(effectiveMaxSpeed * effectiveMaxSpeed);
+        if (maxSpeedSq < 0.0001f) maxSpeedSq = 1.0f; // Prevenim impartirea la 0
+
+        for (int i = 0; i < count; i++) {
+            // calculez patratul vitezei ca sa nu folosesc sqrt()
+            float vx = (float)velX[i];
+            float vy = (float)velY[i];
+            float speedSq = vx * vx + vy * vy;
+
+            float t = speedSq / maxSpeedSq;
+            if (t > 1.0f) t = 1.0f; // plafonez la 1.0 daca depaseste viteza maxima
+
+            // generez un grad de culoare (de la Albastru - lent, spre Verde, pana la Roșu - rapid)
+            unsigned char red = (unsigned char)(t * 255);
+            unsigned char blue = (unsigned char)((1.0f - t) * 255);
+            unsigned char green = (unsigned char)((1.0f - std::abs(t - 0.5f) * 2.0f) * 255);
+
+            colors[i] = { red, green, blue, 255 };
+        }
+    }
+
     //COLIZIUNE FUCNTION 
     // pentru valoare 100.000 o sa mearg prost pentru o verificare N^2
     void ResolveCollisions(){

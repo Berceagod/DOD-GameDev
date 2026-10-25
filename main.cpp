@@ -44,6 +44,9 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
     // Variabila care controleaza daca se foloseste DOD sau OOP
     bool useDOD = false; 
 
+    // variabila pentru heatmap
+    bool enableHeatmap = false;
+
     //numarul de  bile spawante per click
     int spawnCount = 10;
     //raza de spawn a bilelor
@@ -75,6 +78,14 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         //miscare si updatare grid
         update_and_populate_grid(useDOD, dodSystem,oopSystem, grid, CellSize, cols, rows);
 
+        if (enableHeatmap) {
+            if (useDOD) {
+                dodSystem.UpdateVelocityHeatmap(maxSpeed);
+            } else {
+                oopSystem.UpdateVelocityHeatmap(maxSpeed);
+            }
+        }
+
         //coliziune
         resolve_all_collisions(useDOD, grid, dodSystem, oopSystem);
 
@@ -99,6 +110,10 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         
         //da toggle din GUI la useDOD intre true si false
         ImGui::Checkbox("Use DOD)", &useDOD);
+
+        //da toggle din GUI la Velocity Heatmap
+        ImGui::Checkbox("Velocity Heatmap", &enableHeatmap);
+
 
         ImGui::Separator();
         ImGui::SliderInt("Numar Bile / Click", &spawnCount, 1, 10000);
