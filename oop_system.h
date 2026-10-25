@@ -5,12 +5,56 @@
 #include <vector>
 #include "config.h"
 #include <cmath>
-
-class Bila {
+class object{
+    protected:
     int posX;
     int posY;
+    public:
+    object(int xpos = (int)Config::BALL_START_X, int ypos = (int)Config::BALL_START_Y){
+        posX = xpos;
+        posY = ypos;
+    }
+    int getX(){
+        return posX;
+    }
+    int getY(){
+        return posY;
+    }
+    void setPosX(int x) {
+        posX = x;
+    }
+    void setPosY(int y) {
+        posY = y;
+    }
+
+};
+class actor : public object{
+    protected:
     int velX;
     int velY;
+    actor(int xpos = (int)Config::BALL_START_X, int ypos = (int)Config::BALL_START_Y, int xspeed = (int)Config::BALL_SPEED, int yspeed = (int)Config::BALL_SPEED){
+        posX = xpos;
+        posY = ypos;
+        velX = xspeed;
+        velY = yspeed;
+    }
+    public:
+    int getVelX() {
+        return velX;
+    }
+    int getVelY() {
+        return velY;
+    }
+    void setVelX(int xsp) {
+        velX = xsp;
+    }
+    void setVelY(int ysp) {
+        velY = ysp;
+    }
+
+};
+class Bila : public actor{
+
     int radius;
     Color color;
     
@@ -62,37 +106,13 @@ class Bila {
         }
     }
 
-    
-    int getX(){
-        return posX;
-    }
-    int getY(){
-        return posY;
-    }
     int getRadius(){
         return radius;
-    }
-    int getVelX() {
-        return velX;
-    }
-    int getVelY() {
-        return velY;
     }
     Color getColor(){
         return color;
     }
-    void setPosX(int x) {
-        posX = x;
-    }
-    void setPosY(int y) {
-        posY = y;
-    }
-    void setVelX(int xsp) {
-        velX = xsp;
-    }
-    void setVelY(int ysp) {
-        velY = ysp;
-    }
+    
     void setColor(Color col) {
         color = col;
     }

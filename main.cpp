@@ -318,8 +318,9 @@ void apply_repulsion_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSyst
 
         int vx, vy;
         float dist = std::sqrt(distanceSq);
-        vx = static_cast<int>(std::round(dX / dist * 5.0f));
-        vy = static_cast<int>(std::round(dY / dist * 5.0f));
+        
+        vx = static_cast<int>(std::round(dX / dist * (10.0f/((dist/mouseRadius)+1.0f))));
+        vy = static_cast<int>(std::round(dY / dist * (10.0f/((dist/mouseRadius)+1.0f))));
         if(useDOD) {
             dodSystem.velX[i] = -vx;
             dodSystem.velY[i] = -vy;
