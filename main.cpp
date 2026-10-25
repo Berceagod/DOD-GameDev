@@ -10,12 +10,14 @@
 #include "collision.h"
 #include "oop_system.h"
 
-void check_mouse(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem,int spawnCount, float mouseRadius);
+void check_mouse(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem,int spawnCount, float mouseRadius, bool magnetMode);
 //TODO sa fie gen un singur vector, si sa apelezi cu index, in loc sa fie vector de vectori.
 void clear_grid(std::vector<std::vector<int>>& grid);
 void update_and_populate_grid(bool useDOD, DODSystem& dodSystem,OOPSystem& oopSystem, std::vector<std::vector<int>>& grid, int CellSize, int cols, int rows);
 void resolve_all_collisions(bool useDOD, const std::vector<std::vector<int>>& grid, DODSystem& dodSystem, OOPSystem& oopSystem);
 void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex, OOPSystem& oopSystem);
+void apply_repulsion_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem, int mX, int mY, float mouseRadius);
+void apply_magnetism_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem, int mX, int mY, float mouseRadius);
 
 
 //ball speed
@@ -47,6 +49,9 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
     // variabila pentru heatmap
     bool enableHeatmap = false;
 
+    // variabila de toggle pt repulse/magnet (click dreapta)
+    bool magnetMode = false;
+
     //numarul de  bile spawante per click
     int spawnCount = 10;
     //raza de spawn a bilelor
@@ -70,7 +75,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
         Benchmark::Begin();
 
         // spawn bile
-        check_mouse(useDOD, dodSystem, oopSystem,spawnCount, mouseBrushRadius);
+        check_mouse(useDOD, dodSystem, oopSystem,spawnCount, mouseBrushRadius, magnetMode);
 
         //golire grid
         clear_grid(grid);
@@ -141,7 +146,7 @@ SetTextureFilter(ballTex, TEXTURE_FILTER_BILINEAR); // margini mai netede la sca
 }
 
 // Spawneaza o minge cu stats-uri random la pozitia mouse-ului 
-void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int spawnCount, float mouseRadius) {
+void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int spawnCount, float mouseRadius, bool magnetMode) {
     //daca se da click pe slidere, nu se declanseaza spawnul
      if (ImGui::GetIO().WantCaptureMouse) return;
 
@@ -191,31 +196,10 @@ void check_mouse(bool useDOD, DODSystem& dodSystem , OOPSystem& oopSystem,int sp
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
         int mX = GetMouseX();
         int mY = GetMouseY();
-        int rInt = (int)mouseRadius;
-        int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
-        for (int i = 0; i < count; i++) {
-            int x = 0, y = 0, r = 0;
-            if (useDOD) {
-                dodSystem.getBallData(i, x, y, r);
-            } else {
-                oopSystem.getBallData(i, x, y, r);
-            }
-
-            int dx = mX - x;
-            int dy = mY - y;
-            int distanceSq = dx * dx + dy * dy;
-            int radiusSum = r + rInt;
-            float relX = 50/(float)dx;
-            float relY = 50/(float)dy;
-            if(distanceSq <= radiusSum * radiusSum) {
-                if(useDOD) {
-                    dodSystem.velX[i] =-1*(1+ relX);
-                    dodSystem.velY[i] =-1*(1+ relY);
-                } else {
-                    oopSystem.bileArrayOOP[i].setVelX(-1*(1+ relX));
-                    oopSystem.bileArrayOOP[i].setVelY(-1*(1+ relY));
-                }
-            }
+        if (!magnetMode) {
+            apply_repulsion_logic(useDOD, dodSystem, oopSystem, mX, mY, mouseRadius);
+        } else {
+            apply_magnetism_logic(useDOD, dodSystem, oopSystem, mX, mY, mouseRadius);
         }
     }
 }
@@ -278,5 +262,51 @@ void draw_balls(bool useDOD, DODSystem& dodSystem, const Texture2D& ballTex , OO
         dodSystem.DrawRGB(ballTex);
     } else {
         oopSystem.DrawRGB(ballTex);
+    }
+}
+
+void apply_repulsion_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem, int mX, int mY, float mouseRadius) {
+    int rInt = (int)mouseRadius;
+    int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
+    for (int i = 0; i < count; i++) {
+        int x = 0, y = 0, r = 0;
+        if (useDOD) {
+            dodSystem.getBallData(i, x, y, r);
+        } else {
+            oopSystem.getBallData(i, x, y, r);
+        }
+
+        int dx = mX - x;
+        int dy = mY - y;
+        int distanceSq = dx * dx + dy * dy;
+        int radiusSum = r + rInt;
+        float relX = 50/(float)dx;
+        float relY = 50/(float)dy;
+        if(distanceSq <= radiusSum * radiusSum) {
+            if(useDOD) {
+                dodSystem.velX[i] =-1*(1+ relX);
+                dodSystem.velY[i] =-1*(1+ relY);
+            } else {
+                oopSystem.bileArrayOOP[i].setVelX(-1*(1+ relX));
+                oopSystem.bileArrayOOP[i].setVelY(-1*(1+ relY));
+            }
+        }
+    }
+}
+
+void apply_magnetism_logic(bool useDOD, DODSystem& dodSystem, OOPSystem& oopSystem, int mX, int mY, float mouseRadius) {
+    // int rInt = (int)mouseRadius;
+    int count = useDOD ? dodSystem.getCount() : oopSystem.getCount();
+    float rangeSq = mouseRadius * mouseRadius;
+    const int strength = 2;
+
+    for (int i = 0; i < count; i++) {
+        int x = 0, y = 0, r = 0;
+        if (useDOD) {
+            dodSystem.getBallData(i, x, y, r);
+        } else {
+            oopSystem.getBallData(i, x, y, r);
+        }
+
     }
 }
